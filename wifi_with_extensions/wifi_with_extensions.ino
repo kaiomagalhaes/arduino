@@ -3,11 +3,7 @@
 
 SoftwareSerial esp(10, 11);  // RX, TX
 
-String uri = "/bin.json";
-String port = "80";
-String data;
 
-String temp, hum;
 void setup() {
   Serial.println("Inicializando...");
 
@@ -16,47 +12,72 @@ void setup() {
 
   connect_to_wifi();
 }
-MatchState ms;
 
 void loop() {
   Serial.println("Starting loop!");
 
-  //String host = "eogg0iqtwmn3wfn.m.pipedream.net";
+  String host = "eogg0iqtwmn3wfn.m.pipedream.net";
+  String uri = "/";
+  int port = 80;
   //String host = "api.notifications.codelitt.dev";
   //data = "{\"temperature\"=\"12\", \"humidity\"=\"30\"}";
-  String host = "0946-2804-14c-bba4-8b74-48d1-ee4-4d7c-85b1.ngrok-free.app";
+  //String host = "api.notifications.codelitt.dev";
   //String response = post(host, data);
-  String response = get(host);
-
-  Serial.println("-------------- RESPONSE --------------");
+  String response = get(host, uri, port);
+  Serial.println("------------ Response ------------");
   Serial.println(response);
-  Serial.println("-------------- RESPONSE --------------");
+  Serial.println("-----------/ Response ------------");
 
-  ms.Target(response.c_str());
+  int status = getStatus(response);
 
-  char result = ms.Match("{.*}");
-
-  if (result > 0) {
-    Serial.print("Found match at: ");
-    Serial.println(ms.MatchStart);  // 16 in this case
-    Serial.print("Match length: ");
-    Serial.println(ms.MatchLength);  // 3 in this case
-    char jsonChar[ms.MatchLength] = "";
-    int a = 0;
-    for (int i = ms.MatchStart; i < ms.MatchLength; i++) {
-      jsonChar[a] = response[i];
-          Serial.println("Json char: " + jsonChar[a]);
-
-      a++;
-    }
-    Serial.println("-------------- POTAAATO --------------");
-    Serial.println(jsonChar);
-    Serial.println("-------------- POTAAATO --------------");
-  } else Serial.println("No match.");
-  // String result = ms.Match ("a", 0);
-  delay(5000);
+  Serial.println("Staaatus: " + String(status));
 }
 
+int getStatus(String httpResponse) {
+  Serial.println("------------ Response Start ------------");
+  Serial.println(httpResponse);
+  Serial.println("-----------/ Response End ------------");
+
+  MatchState ms;
+  ms.Target(httpResponse.c_str());
+
+  String lineRegex = "HTTP\/1.1(%s%d{3})";
+  char lineStatus = ms.Match(lineRegex.c_str());
+  Serial.println("------------ Line Status ------------");
+  Serial.println(lineStatus);
+  Serial.println("-----------/ Line Status ------------");
+
+  return 0;
+  /*
+  if (result > 0) {
+    int start = ms.MatchStart;  // 16 in this case
+    int end = ms.MatchLength;   // 3 in this case
+    String statusLine = response.substring(start - 1, start + end);
+    Serial.println("------------ JSON ------------");
+    Serial.println(statusLine);
+    Serial.println("------------ JSON ------------");
+
+    if (result > 0) {
+      int status = match(String(statusLine), "%d+$", 100).toInt();
+      return status;
+    }
+  } else {
+    return 0;
+  }
+  */
+}
+
+String match(String base, String reg, int expectedSize) {
+  MatchState mst;
+  mst.Target(base.c_str());
+  char matchResult = mst.Match(reg.c_str());
+  if (matchResult > 0) {
+    char buf[expectedSize];
+    return String(mst.GetMatch(buf));
+  } else {
+    return "";
+  }
+}
 
 void sendCommand(String cmd) {
   esp.println(cmd);

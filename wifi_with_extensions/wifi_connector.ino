@@ -1,5 +1,9 @@
-String rede = "Kaio";
-String senha = "frangofrito";
+String rede = "vaka_viking_2g";
+String senha = "batataquente";
+
+//String rede = "Kaio";
+//String senha = "frangofrito";
+
 
 void connect_to_wifi() {
   delay(1000);
@@ -8,7 +12,7 @@ void connect_to_wifi() {
   Serial.println("Conectando a rede...");
 
   sendCommand(get_connection_string());
-  String resposta = readResponse(10000);
+  String resposta = readResponse(5000);
 
   delay(2000);  //espera de seguranca
 
@@ -57,6 +61,6 @@ void reset() {
 
 void closeRequest() {
   Serial.println("Closing the request:" + readResponse(1000));
-  esp.print("AT+CIPCLOSE");
+  esp.println("AT+CIPCLOSE");
   delay(1000);
 }

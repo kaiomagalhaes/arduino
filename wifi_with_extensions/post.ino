@@ -1,7 +1,7 @@
-String post(String host, String data) {
+String post(String host, String uri, int port, String data) {
   Serial.println("Starting post!");
 
-  esp.println("AT+CIPSTART=\"TCP\",\"" + host + "\",80");  //start a TCP connection.
+  esp.println("AT+CIPSTART=\"TCP\",\"" + host + "\","+String(port));  //start a TCP connection.
 
   delay(1000);
 
