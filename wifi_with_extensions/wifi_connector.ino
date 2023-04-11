@@ -6,15 +6,12 @@ String senha = "batataquente";
 
 
 void connect_to_wifi() {
-  delay(1000);
   reset();
 
   Serial.println("Conectando a rede...");
 
   sendCommand(get_connection_string());
-  String resposta = readResponse(5000);
-
-  delay(2000);  //espera de seguranca
+  readResponse(3000);
 
   if (resposta.indexOf("OK") == -1) {
     Serial.println("Atencao: Nao foi possivel conectar a rede WiFi. \r\nTrying again.");
@@ -22,6 +19,10 @@ void connect_to_wifi() {
   } else {
     Serial.println("Conectato!");
   }
+}
+
+void sendCommand(String cmd) {
+  esp.println(cmd);
 }
 
 String get_connection_string() {
@@ -35,9 +36,8 @@ String get_connection_string() {
 }
 
 String readResponse(unsigned int timeout) {
-  unsigned long timeIn = millis();  //momento que entramos nessa funcao é salvo
-  String resposta = "";
-  //cada comando AT tem um tempo de resposta diferente...
+  resposta = "";
+  unsigned long timeIn = millis();
   while (timeIn + timeout > millis()) {
     while (esp.available()) {
       char c = esp.read();
@@ -48,19 +48,14 @@ String readResponse(unsigned int timeout) {
   return resposta;
 }
 
-String getBody(String response) {
-  MatchState ms;
-  ms.Target("{.*}");
-}
-
 void reset() {
   esp.println("AT+RST");
-  delay(1000);
+  readResponse(1000);
   if (esp.find("OK")) Serial.println("Module Reset");
 }
 
 void closeRequest() {
   Serial.println("Closing the request:" + readResponse(1000));
   esp.println("AT+CIPCLOSE");
-  delay(1000);
+  readResponse(1000);
 }

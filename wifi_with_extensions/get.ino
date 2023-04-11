@@ -1,12 +1,11 @@
-String get(String host, String uri, int port) {
+void get() {
   Serial.println("Starting get!");
 
-  esp.println("AT+CIPSTART=\"TCP\",\"" + host + "\","+String(port));  //start a TCP connection.
+  esp.println("AT+CIPSTART=\"TCP\",\"" + host + "\"," + String(port));  //start a TCP connection.
 
   readResponse(1000);
 
-
-  String getRequest = getRequestString(host, uri);
+  String getRequest = getRequestString();
 
   String sendCmd = "AT+CIPSEND=";  //determine the number of caracters to be sent.
   readResponse(1000);
@@ -22,14 +21,13 @@ String get(String host, String uri, int port) {
   esp.print(getRequest);
 
   Serial.println("Reading response");
-  String resposta = readResponse(1000 * 3);
+  readResponse(1000 * 3);
 
-  closeRequest();
-
-  return resposta;
+  //closeRequest();
+  //return resposta;
 }
 
-String getRequestString(String host, String uri) {
+String getRequestString() {
   return "GET " + uri + " HTTP/1.1\r\n" +
 
          "Host: " + host + "\r\n" +

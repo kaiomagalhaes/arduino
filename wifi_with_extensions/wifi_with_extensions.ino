@@ -3,46 +3,80 @@
 
 SoftwareSerial esp(10, 11);  // RX, TX
 
+String resposta = "";
+String host = "kaio-calendar.herokuapp.com";
+String uri = "/kaio/isinmeeting";
+int port = 80;
+MatchState ms;
+int status;
+
+
 
 void setup() {
-  Serial.println("Inicializando...");
 
   Serial.begin(9600);
   esp.begin(9600);
+
+  Serial.println("Inicializando...");
+
+  setupLed();
+
 
   connect_to_wifi();
 }
 
 void loop() {
-  Serial.println("Starting loop!");
+  blink();
 
-  String host = "eogg0iqtwmn3wfn.m.pipedream.net";
-  String uri = "/";
-  int port = 80;
-  //String host = "api.notifications.codelitt.dev";
-  //data = "{\"temperature\"=\"12\", \"humidity\"=\"30\"}";
-  //String host = "api.notifications.codelitt.dev";
-  //String response = post(host, data);
-  String response = get(host, uri, port);
+  Serial.println("Starting loop!");
+  get();
   Serial.println("------------ Response ------------");
-  Serial.println(response);
+  Serial.println(resposta);
   Serial.println("-----------/ Response ------------");
 
-  int status = getStatus(response);
+  ms.Target(resposta.c_str());
+  char matchResult = ms.Match("HTTP\/1.1(%s%d+)");
+  if (matchResult > 0) {
+    int start = ms.MatchStart;  // 16 in this case
+    int end = ms.MatchLength;   // 3 in this case
+    String statusLine = resposta.substring(start - 1, start + end);
+    Serial.println("------------ Status Line ------------");
+    Serial.println(statusLine);
+    Serial.println("------------ Status Line ------------");
 
-  Serial.println("Staaatus: " + String(status));
+    if (statusLine != "") {
+      ms.Target(statusLine.c_str());
+      matchResult = ms.Match("%d+$");
+      if (matchResult > 0) {
+        start = ms.MatchStart;  // 16 in this case
+        end = ms.MatchLength;   // 3 in this case
+        status = statusLine.substring(start, start + end).toInt();
+        Serial.println("------------ Status ------------");
+        Serial.println(status);
+
+        Serial.println("------------ Status ------------");
+      } else {
+        Serial.println("No match 2!");
+      }
+    } else {
+      Serial.println("not that different it sounds like");
+    }
+
+  } else {
+    Serial.println("No match 1!");
+  }
+
+  blink();
+  //Serial.println("The status is: " + status);
+
+  //int status = getStatus();
+
+  //Serial.println("Staaatus: " + String(status));
 }
 
-int getStatus(String httpResponse) {
-  Serial.println("------------ Response Start ------------");
-  Serial.println(httpResponse);
-  Serial.println("-----------/ Response End ------------");
-
-  MatchState ms;
-  ms.Target(httpResponse.c_str());
-
-  String lineRegex = "HTTP\/1.1(%s%d{3})";
-  char lineStatus = ms.Match(lineRegex.c_str());
+/*
+int getStatus() {
+  String lineStatus = match(resposta, 50);
   Serial.println("------------ Line Status ------------");
   Serial.println(lineStatus);
   Serial.println("-----------/ Line Status ------------");
@@ -64,21 +98,22 @@ int getStatus(String httpResponse) {
   } else {
     return 0;
   }
-  */
+  
 }
 
-String match(String base, String reg, int expectedSize) {
-  MatchState mst;
-  mst.Target(base.c_str());
-  char matchResult = mst.Match(reg.c_str());
+String match(String &base, int expectedSize) {
+  ms.Target(base.c_str());
+  Serial.println("------------ BASE ------------");
+  Serial.println(base);
+  Serial.println("-----------/ BASE ------------");
+
+  char matchResult = ms.Match("HTTP\/1.1(%s%d{3})");
   if (matchResult > 0) {
     char buf[expectedSize];
-    return String(mst.GetMatch(buf));
+    return String(ms.GetMatch(buf));
   } else {
+    Serial.println("No Match");
     return "";
   }
 }
-
-void sendCommand(String cmd) {
-  esp.println(cmd);
-}
+*/
