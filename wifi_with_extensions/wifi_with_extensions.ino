@@ -19,8 +19,7 @@ void setup() {
 
   Serial.println("Inicializando...");
 
-  setupLed();
-
+  setupLED();
 
   connect_to_wifi();
 }

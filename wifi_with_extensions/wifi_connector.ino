@@ -6,6 +6,13 @@ String senha = "batataquente";
 
 
 void connect_to_wifi() {
+  white();
+  delay(100);
+  turnLightsOff();
+  delay(100);
+  white();
+  turnLightsOff();
+
   reset();
 
   Serial.println("Conectando a rede...");
